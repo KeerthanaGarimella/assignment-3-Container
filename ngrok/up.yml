@@ -1,6 +1,7 @@
 ---
 - name: Start ngrok tunnel for Gitea
   hosts: localhost
+  connection: local
   tasks:
     - name: Run ngrok to expose port 3000
       shell: ngrok http 3000
@@ -10,4 +11,4 @@
 
     - name: Display ngrok tunnel status (manual check needed)
       debug:
-        msg: "ngrok should now be running at https://<your-subdomain>.ngrok-free.app"
+        msg: "✅ ngrok should now be running and forwarding to http://localhost:3000. Visit the public URL shown in the terminal (e.g., https://26dc15a26c40.ngrok-free.app/)"
