@@ -1,56 +1,57 @@
+✅  README.md (Fully Submission-Ready)
+markdown
+Copy
+Edit
 # cdevops-gitea
-k8s gitea lab to take dev (sqlite based) to prod (mysql based)
 
-TLDR;
+k8s Gitea lab to take dev (SQLite-based) to prod (MySQL-based) setup.
+
+---
+
+## ⚡ TL;DR – Dev Mode Setup (for reference)
 
 ```bash
 pip install ansible kubernetes
 git submodule update --init --recursive
 ansible-playbook up.yml
-```
+Wait until kubectl get pods shows all pods are running, then:
 
-Wait until `kubectl get pod` shows all pods running and:
-
-```bash
+bash
+Copy
+Edit
 kubectl port-forward svc/gitea-http 3000:3000
-```
+Access Gitea at: http://localhost:3000
 
-Now you should be able to access gitea in development mode.
+📦 Gitea Production Setup with Helm, MySQL & ngrok
+This project demonstrates deploying Gitea in production mode using:
 
-The challenge is to run this in production mode.
+Helm (for persistence)
 
-# 📦 Gitea Production Setup with Helm, MySQL & ngrok
+External MySQL database
 
-This project demonstrates deploying Gitea in **production mode** using:
-- Helm (for persistence and modular deployment)
-- External MySQL database
-- Kubernetes via k3d
-- Public access through **ngrok tunnel**
+Kubernetes (via k3d)
 
----
+Public access via ngrok tunnel
 
-## 🎯 Assignment Objectives
+🎯 Assignment Objectives
+✅ Use Helm to make Gitea repository data persistent
 
-- ✅ Use Helm to make the Gitea repository data persistent
-- ✅ Use an external MySQL database
-- ✅ Expose the Gitea instance publicly using ngrok
-- ✅ Provide a clear, easy-to-follow README
+✅ Use an external MySQL database
 
----
+✅ Expose Gitea publicly via ngrok
 
-## 🌐 Public Access Link
+✅ Provide a clean, accurate README
 
-🔗 **Access Gitea via ngrok:**  
-👉 [https://26dc15a26c40.ngrok-free.app] https://26dc15a26c40.ngrok-free.app
+🌐 Public Access Link
+🔗 Live Gitea Instance:
+👉 https://26dc15a26c40.ngrok-free.app
 
----
-
-## 🚀 Deployment Instructions
-
-### 1️⃣ Clone the Repository & Navigate
-
-```bash
-git clone <your-repo-url>
+🚀 Production Deployment Instructions
+1️⃣ Clone the Repository
+bash
+Copy
+Edit
+git clone https://github.com/KeerthanaGarimella/assignment-3-Container
 cd assignment-3-Container
 2️⃣ Install Dependencies (inside Codespace)
 bash
@@ -59,16 +60,12 @@ Edit
 pip install ansible kubernetes
 helm repo add gitea-charts https://dl.gitea.io/charts/
 helm repo update
-3️⃣ Deploy MySQL
-Apply the MySQL deployment and PVC defined in gitea/mysql.yml:
-
+3️⃣ Deploy MySQL (External DB)
 bash
 Copy
 Edit
 kubectl apply -f gitea/mysql.yml
-4️⃣ Configure Gitea for Production (via Helm)
-Deploy Gitea using Helm with external DB:
-
+4️⃣ Configure & Deploy Gitea using Helm
 bash
 Copy
 Edit
@@ -76,7 +73,7 @@ helm upgrade --install gitea gitea-charts/gitea \
   --namespace default \
   --create-namespace \
   -f gitea/values.yaml
-✅ Ensure your gitea/values.yaml contains:
+Your gitea/values.yaml must include:
 
 yaml
 Copy
@@ -94,75 +91,90 @@ externalDatabase:
 persistence:
   enabled: true
   size: 5Gi
-5️⃣ Port Forward Gitea
-In terminal:
-
+5️⃣ Port Forward the Gitea Service
 bash
 Copy
 Edit
 kubectl port-forward svc/gitea-http 3000:3000
-6️⃣ Expose via ngrok
-In a second terminal:
+6️⃣ Start ngrok to Expose Gitea Publicly
+⚠️ Don’t include ngrok setup in prod/up.yml. Use a separate one in ngrok/up.yml.
 
+⬇️ Install ngrok (if not already):
+bash
+Copy
+Edit
+curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
+echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
+sudo apt update && sudo apt install ngrok
+ngrok config add-authtoken <your-token>
+▶️ Start the tunnel:
 bash
 Copy
 Edit
 ngrok http 3000
-You’ll get a URL like:
+✅ You’ll receive a public link like: https://26dc15a26c40.ngrok-free.app
 
-cpp
-Copy
-Edit
-https://26dc15a26c40.ngrok-free.app
 📁 Folder Structure
-bash
+swift
 Copy
 Edit
 assignment-3-Container/
-│
 ├── gitea/
-│   ├── mysql.yml         # MySQL Deployment + PVC
-│   ├── values.yaml       # Helm override config
-│   ├── up.yml            # Ansible playbook to start
-│   ├── down.yml          # Ansible playbook to clean up
+│   ├── mysql.yml
+│   ├── values.yaml
+│   ├── up.yml
+│   ├── down.yml
 │
 ├── k8s/k3d/
 │   ├── up.yml
 │   ├── down.yml
 │
 ├── ngrok/
-│   └── up.yml            # Optional: for ngrok automation
+│   └── up.yml
 │
-├── README.md             # ← You're here
+├── screenshots/
+│   ├── gitea-ngrok-browser.png
+│   ├── kubectl-get-pods.png
+│   ├── ngrok-terminal.png
+│   ├── helm-install-output.png
+│   └── readme-ngrok-link.png
+│
+├── README.md
 ├── LICENSE
 └── .gitignore
-📸 Required Screenshots (attached separately)
+📸 Required Screenshots (in /screenshots folder)
 ✅ Gitea public homepage (via ngrok)
 
 ✅ kubectl get pods showing MySQL and Gitea
 
-✅ ngrok terminal with public link
+✅ ngrok terminal with forwarding URL
 
-✅ Helm install command and confirmation
+✅ Helm deployment success output
 
-✅ This README.md showing public URL
+✅ This README.md with ngrok link
 
+🔁 Optional: Start ngrok via Ansible
+bash
+Copy
+Edit
+ansible-playbook ngrok/up.yml
+ngrok/up.yml contents:
+
+yaml
+Copy
+Edit
+---
+- name: Start ngrok tunnel for Gitea
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Run ngrok to expose port 3000
+      shell: ngrok http 3000
+      async: 3600
+      poll: 0
 🧾 Notes
-Developed and tested in GitHub Codespace
+Developed and tested inside GitHub Codespaces
 
-ngrok must remain running for external access
+Public access is live only while ngrok and port-forward are active
 
-All values and manifests can be customized as needed
-
-### Points to Cover
-
-## Marking
-
-|Item|Out Of|
-|--|--:|
-|use [the gitea helm](https://gitea.com/gitea/helm-gitea) to make the repository data persistent|3|
-|make gitea use external database|3|
-|Use [this article](https://blog.techiescamp.com/using-ngrok-with-kubernetes/) to expose your gitea instance publically|2|
-|make the README easy to use and ACCURATE|2|
-|||
-|total|10|
+All values and playbooks can be customized
